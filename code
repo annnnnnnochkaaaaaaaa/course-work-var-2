@@ -272,3 +272,290 @@ class Program
             Console.WriteLine($"Reader with key {readerKey} not found.");
         }
     }
+
+    static void CountBooksByAuthorInReadingRoom(List<Book> books, List<ReadingRoom> readingRooms)
+    {
+        Console.WriteLine("Enter the author's name:");
+        string authorName = Console.ReadLine();
+
+        Console.WriteLine("Enter the reading room key:");
+        int readingRoomKey;
+        if (int.TryParse(Console.ReadLine(), out readingRoomKey))
+        {
+            ReadingRoom readingRoom = readingRooms.FirstOrDefault(r => r.Key == readingRoomKey);
+
+            if (readingRoom != null)
+            {
+                int bookCount = books.Count(b => b.Author == authorName && b.ReadingRoom == readingRoomKey);
+
+                Console.WriteLine($"Number of books by author {authorName} in reading room {readingRoom.RoomName}: {bookCount}");
+            }
+            else
+            {
+                Console.WriteLine($"Reading room with key {readingRoomKey} not found.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid input. Please enter a number for the reading room key.");
+        }
+    }
+    static void CountReadersWithSingleCopyBooks(List<Book> books, List<Reader> readers)
+    {
+        var singleCopyBookKeys = books.GroupBy(b => b.Key)
+                                      .Where(group => group.Count() == 1)
+                                      .Select(group => group.Key);
+
+        var readersWithSingleCopyBooks = readers.Where(reader =>
+            reader.BooksList.Any(bookKey => singleCopyBookKeys.Contains(bookKey)));
+
+        Console.WriteLine($"Number of readers with books available in a single copy: {readersWithSingleCopyBooks.Count()}");
+    }
+    static void DisplayTopRatedBooks(List<Book> books)
+    {
+        var topRatedBooks = books.OrderByDescending(book => book.Rating)
+                                 .Take(5);
+
+        Console.WriteLine("Top 5 Books with the Highest Rating:");
+        foreach (var book in topRatedBooks)
+        {
+            Console.WriteLine(book.ToString());
+            Console.WriteLine("------------------------------");
+        }
+    }
+    static void AddNewReaderToLibrary(List<Reader> readers)
+    {
+        Console.WriteLine("Enter the details of the new reader:");
+
+        int key;
+        bool isKeyUnique;
+
+        do
+        {
+            Console.Write("Enter a unique Key: ");
+            key = Convert.ToInt32(Console.ReadLine());
+
+            isKeyUnique = !readers.Any(reader => reader.Key.Equals(key));
+
+            if (!isKeyUnique)
+            {
+                Console.WriteLine($"The Key '{key}' is already in use. Please choose a different Key.");
+            }
+
+        } while (!isKeyUnique);
+
+        Console.Write("Full Name: ");
+        string fullName = Console.ReadLine();
+
+        string ticketNumber;
+        bool isTicketNumberUnique;
+
+        do
+        {
+            Console.Write("Enter a unique Ticket Number: ");
+            ticketNumber = Console.ReadLine();
+
+            isTicketNumberUnique = !readers.Any(reader => reader.TicketNumber.Equals(ticketNumber));
+
+            if (!isTicketNumberUnique)
+            {
+                Console.WriteLine($"The Ticket Number '{ticketNumber}' is already in use. Please choose a different Ticket Number.");
+            }
+
+        } while (!isTicketNumberUnique);
+
+        Console.Write("Birth Date (yyyy-MM-dd): ");
+        if (DateTime.TryParseExact(Console.ReadLine(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime birthDate))
+        {
+            Console.Write("Phone Number: ");
+            string phoneNumber = Console.ReadLine();
+
+            Console.Write("Education: ");
+            string education = Console.ReadLine();
+
+            Console.Write("Reading Room: ");
+            if (int.TryParse(Console.ReadLine(), out int readingRoom))
+            {
+                int[] booksList = new int[10];
+
+                readers.Add(new Reader(key, fullName, ticketNumber, birthDate, phoneNumber, education, readingRoom, booksList));
+
+                Console.WriteLine("New reader added successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid input for Reading Room. Please enter a number.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid input for Birth Date. Please enter a valid date in the format yyyy-MM-dd.");
+        }
+    }
+    static void WithdrawBookFromReader(List<Reader> readers, List<Book> books)
+    {
+        Console.WriteLine("Enter the details to withdraw a book from a reader:");
+
+        Console.Write("Reader Key: ");
+        int readerKey = Convert.ToInt32(Console.ReadLine());
+
+        Console.Write("Book Code: ");
+        string bookCode = Console.ReadLine();
+
+        Reader reader = readers.Find(r => r.Key.Equals(readerKey));
+
+        if (reader != null)
+        {
+            int bookIndex = Array.IndexOf(reader.BooksList, books.FindIndex(b => b.BookCode.Equals(bookCode)));
+
+            if (bookIndex != -1)
+            {
+                int bookKey = books.FindIndex(b => b.BookCode.Equals(bookCode));
+                books[bookKey].Quantity--;
+                Array.Clear(reader.BooksList, bookIndex, 1);
+
+                Console.WriteLine("Book withdrawn successfully.");
+            }
+            else
+            {
+                Console.WriteLine("The reader does not have this book in the list.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Reader not found.");
+        }
+    }
+    static void AcceptBookToLibrary(List<Book> books)
+    {
+        Console.WriteLine("Enter the details to accept a book to the library fund:");
+
+        int key;
+        bool isKeyUnique;
+        do
+        {
+            Console.Write("Enter a unique Key: ");
+            key = Convert.ToInt32(Console.ReadLine());
+
+            isKeyUnique = !books.Any(reader => reader.Key.Equals(key));
+
+            if (!isKeyUnique)
+            {
+                Console.WriteLine($"The Key '{key}' is already in use. Please choose a different Key.");
+            }
+
+        } while (!isKeyUnique);
+
+        Console.Write("Title: ");
+        string title = Console.ReadLine();
+
+        Console.Write("Author: ");
+        string author = Console.ReadLine();
+
+        Console.Write("Year of publication: ");
+        int year = int.Parse(Console.ReadLine());
+
+        Console.Write("Book Code: ");
+        string bookCode = Console.ReadLine();
+
+        Console.Write("Issue Date (yyyy-MM-dd): ");
+        DateTime issueDate = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Console.Write("Return Date in the room (yyyy-MM-dd): ");
+        DateTime returnDate = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Console.Write("Reading Room: ");
+        int readingRoom = int.Parse(Console.ReadLine());
+
+        Console.Write("Quantity: ");
+        int quantity = int.Parse(Console.ReadLine());
+
+
+        Console.Write("Rating: ");
+        int rating = int.Parse(Console.ReadLine());
+
+        books.Add(new Book(key, title, author, year, bookCode, issueDate, returnDate, readingRoom, quantity, rating));
+
+        Console.WriteLine("Book accepted to the library fund successfully.");
+    }
+    static void Main()
+    {
+        List<Book> books = CreateBookInstances();
+        List<Reader> readers = CreateReaderInstances();
+        List<ReadingRoom> readingRooms = CreateReadingRoomInstances();
+
+        while (true)
+        {
+            Console.WriteLine("Choose an option:");
+            Console.WriteLine("1. Display Book Information");
+            Console.WriteLine("2. Display Reader Information");
+            Console.WriteLine("3. Display Reading Room Information");
+            Console.WriteLine("4. Display Books for Visitor");
+            Console.WriteLine("5. Calculate Free Places in Reading Rooms");
+            Console.WriteLine("6. Check if Books Can be Issued to a Reader");
+            Console.WriteLine("7. Count Books by Author in Reading Room");
+            Console.WriteLine("8. Count Readers with Single Copy Books");
+            Console.WriteLine("9. Display Top Rated Books");
+            Console.WriteLine("10. Add New Reader to Library");
+            Console.WriteLine("11. Withdraw Book from Reader");
+            Console.WriteLine("12. Accept Book to Library Fund");
+            Console.WriteLine("99. Exit");
+
+            int choice;
+            if (int.TryParse(Console.ReadLine(), out choice))
+            {
+                switch (choice)
+                {
+                    case 1:
+                        DisplayBookInformation(books);
+                        break;
+                    case 2:
+                        DisplayReaderInformation(readers);
+                        break;
+                    case 3:
+                        DisplayReadingRoomInformation(readingRooms);
+                        break;
+                    case 4:
+                        DisplayBooksForVisitor(books, readers);
+                        break;
+                    case 5:
+                        CalculateFreePlaces(readingRooms, readers);
+                        break;
+                    case 6:
+                        IssueBookToReader(books, readers);
+                        break;
+                    case 7:
+                        CountBooksByAuthorInReadingRoom(books, readingRooms);
+                        break;
+                    case 8:
+                        CountReadersWithSingleCopyBooks(books, readers);
+                        break;
+                    case 9:
+                        DisplayTopRatedBooks(books);
+                        break;
+                    case 10:
+                        AddNewReaderToLibrary(readers);
+                        break;
+                    case 11:
+                        WithdrawBookFromReader(readers, books);
+                        break;
+                    case 12:
+                        AcceptBookToLibrary(books);
+                        break;
+                    case 99:
+                        Environment.Exit(0);
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a number.");
+            }
+
+            Console.WriteLine();
+        }
+    }
+}

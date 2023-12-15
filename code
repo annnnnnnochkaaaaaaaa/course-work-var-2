@@ -1,1 +1,274 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Numerics;
+using System.Text;
+using System.Collections.Generic;
+using System.Globalization;
 
+class Book
+{
+    public int Key { get; set; }
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public int Year { get; set; }
+    public string BookCode { get; set; }
+    public DateTime IssueDate { get; set; }
+    public DateTime ReturnDate { get; set; }
+    public int ReadingRoom { get; set; }
+    public int Quantity { get; set; }
+    public int Rating { get; set; }
+
+    public Book(int key, string title, string author, int year, string bookCode, DateTime issueDate, DateTime returnDate, int readingRoom, int quantity, int rating)
+    {
+        Key = key;
+        Title = title;
+        Author = author;
+        Year = year;
+        BookCode = bookCode;
+        IssueDate = issueDate;
+        ReturnDate = returnDate;
+        ReadingRoom = readingRoom;
+        Quantity = quantity;
+        Rating = rating;
+    }
+
+    public override string ToString()
+    {
+        return $"Key: {Key}\nTitle: {Title}\nAuthor: {Author}\nYear of publication: {Year}\nBook Code: {BookCode}\nIssue Date: {IssueDate.ToShortDateString()}\nReturn Date in the room: {ReturnDate.ToShortDateString()}\nRoom: {ReadingRoom}\nQuantity: {Quantity}\nRating: {Rating}";
+    }
+}
+
+class Reader
+{
+    public int Key { get; set; }
+    public string FullName { get; set; }
+    public string TicketNumber { get; set; }
+    public DateTime BirthDate { get; set; }
+    public string PhoneNumber { get; set; }
+    public string Education { get; set; }
+    public int ReadingRoom { get; set; }
+    public int[] BooksList { get; set; }
+
+    public Reader(int key, string fullName, string ticketNumber, DateTime birthDate, string phoneNumber, string education, int readingRoom, int[] books)
+    {
+        Key = key;
+        FullName = fullName;
+        TicketNumber = ticketNumber;
+        BirthDate = birthDate;
+        PhoneNumber = phoneNumber;
+        Education = education;
+        ReadingRoom = readingRoom;
+        BooksList = books;
+    }
+
+    public override string ToString()
+    {
+        return $"Key: {Key}\nFull Name: {FullName}\nTicket Number: {TicketNumber}\nBirth Date: {BirthDate.ToShortDateString()}\nPhone Number: {PhoneNumber}\nEducation: {Education}\nRoom: {ReadingRoom}\n";
+    }
+}
+
+class ReadingRoom
+{
+    public int Key { get; set; }
+    public string LibraryName { get; set; }
+    public string RoomName { get; set; }
+    public string Specialization { get; set; }
+    public int Capacity { get; set; }
+    public int[] ReadersList { get; set; }
+
+    public ReadingRoom(int key, string libraryName, string roomName, string specialization, int capacity, int[] readers)
+    {
+        Key = key;
+        LibraryName = libraryName;
+        RoomName = roomName;
+        Specialization = specialization;
+        Capacity = capacity;
+        ReadersList = readers;
+    }
+
+    public override string ToString()
+    {
+        return $"Key: {Key}\nLibrary Name: {LibraryName}\nRoom: {RoomName}\nSpecialization: {Specialization}\nCapacity: {Capacity}\n";
+    }
+}
+
+
+class Program
+{
+    static List<Book> CreateBookInstances()
+    {
+        List<Book> books = new List<Book>();
+        StreamReader file = new StreamReader("book.txt", Encoding.Default);
+
+        while (!file.EndOfStream)
+        {
+            string[] s = file.ReadLine().Split(";");
+            int key = Convert.ToInt32(s[0]);
+            string title = s[1];
+            string author = s[2];
+            int year = Convert.ToInt32(s[3]);
+            string bookCode = s[4];
+            DateTime issueDate = DateTime.ParseExact(s[5], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            DateTime returnDate = DateTime.ParseExact(s[6], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            int readingRoom = Convert.ToInt32(s[7]);
+            int quantity = Convert.ToInt32(s[8]);
+            int rating = Convert.ToInt32(s[9]);
+
+            books.Add(new Book(key, title, author, year, bookCode, issueDate, returnDate, readingRoom, quantity, rating));
+        }
+
+        file.Close();
+        return books;
+    }
+
+    static List<Reader> CreateReaderInstances()
+    {
+        List<Reader> readers = new List<Reader>();
+        StreamReader file = new StreamReader("reader.txt", Encoding.Default);
+
+        while (!file.EndOfStream)
+        {
+            string[] s = file.ReadLine().Split(";");
+            int key = Convert.ToInt32(s[0]);
+            string fullName = s[1];
+            string ticketNumber = s[2];
+            DateTime birthDate = DateTime.ParseExact(s[3], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            string phoneNumber = s[4];
+            string education = s[5];
+            int readingRoom = Convert.ToInt32(s[6]);
+            int[] booksList = Array.ConvertAll(s[7].Split(","), int.Parse);
+
+            readers.Add(new Reader(key, fullName, ticketNumber, birthDate, phoneNumber, education, readingRoom, booksList));
+        }
+
+        file.Close();
+        return readers;
+    }
+
+    static List<ReadingRoom> CreateReadingRoomInstances()
+    {
+        List<ReadingRoom> readingRooms = new List<ReadingRoom>();
+        StreamReader file = new StreamReader("readingroom.txt", Encoding.Default);
+
+        while (!file.EndOfStream)
+        {
+            string[] s = file.ReadLine().Split(";");
+            int key = Convert.ToInt32(s[0]);
+            string libraryName = s[1];
+            string roomName = s[2];
+            string specialization = s[3];
+            int capacity = Convert.ToInt32(s[4]);
+            int[] readersList = Array.ConvertAll(s[5].Split(","), int.Parse);
+
+            readingRooms.Add(new ReadingRoom(key, libraryName, roomName, specialization, capacity, readersList));
+        }
+
+        file.Close();
+        return readingRooms;
+    }
+    static void DisplayBookInformation(List<Book> books)
+    {
+        foreach (var book in books)
+        {
+            Console.WriteLine(book.ToString());
+            Console.WriteLine("------------------------------");
+        }
+    }
+
+    static void DisplayReaderInformation(List<Reader> readers)
+    {
+        foreach (var reader in readers)
+        {
+            Console.WriteLine(reader.ToString());
+            Console.WriteLine("------------------------------");
+        }
+    }
+
+    static void DisplayReadingRoomInformation(List<ReadingRoom> readingRooms)
+    {
+        foreach (var room in readingRooms)
+        {
+            Console.WriteLine(room.ToString());
+            Console.WriteLine("------------------------------");
+        }
+    }
+    static void DisplayBooksForVisitor(List<Book> books, List<Reader> readers)
+    {
+        Console.WriteLine("Enter the key of the visitor:");
+        int visitorKey = Convert.ToInt32(Console.ReadLine());
+
+        Reader visitor = readers.FirstOrDefault(r => r.Key == visitorKey);
+
+        if (visitor != null)
+        {
+            Console.WriteLine($"Books for visitor {visitor.FullName} (Key: {visitor.Key}):");
+            foreach (int bookKey in visitor.BooksList)
+            {
+                Book book = books.FirstOrDefault(b => b.Key == bookKey);
+                if (book != null)
+                {
+                    Console.WriteLine(book.ToString());
+                    Console.WriteLine("------------------------------");
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Visitor with key {visitorKey} not found.");
+        }
+    }
+    static void CalculateFreePlaces(List<ReadingRoom> readingRooms, List<Reader> readers)
+    {
+        Console.WriteLine("Free places in each reading room:");
+
+        foreach (var room in readingRooms)
+        {
+            int occupiedPlaces = readers.Count(reader => reader.ReadingRoom == room.Key);
+            int freePlaces = room.Capacity - occupiedPlaces;
+
+            Console.WriteLine($"Reading Room: {room.RoomName} (Key: {room.Key})");
+            Console.WriteLine($"Occupied Places: {occupiedPlaces}");
+            Console.WriteLine($"Free Places: {freePlaces}");
+            Console.WriteLine("------------------------------");
+        }
+    }
+    static void IssueBookToReader(List<Book> books, List<Reader> readers)
+    {
+        Console.WriteLine("Enter the key of the reader:");
+        int readerKey = Convert.ToInt32(Console.ReadLine());
+
+        Reader reader = readers.FirstOrDefault(r => r.Key == readerKey);
+
+        if (reader != null)
+        {
+            Console.WriteLine("Enter the key of the book:");
+            int bookKey = Convert.ToInt32(Console.ReadLine());
+
+            Book book = books.FirstOrDefault(b => b.Key == bookKey);
+
+            if (book != null)
+            {
+                if (book.Quantity > 0 && !reader.BooksList.Contains(Convert.ToInt32(bookKey)))
+                {
+                    Console.WriteLine($"Book {book.Title} (Key: {book.Key}) can be issued to reader {reader.FullName} (Key: {reader.Key}).");
+                }
+                else if (reader.BooksList.Contains(Convert.ToInt32(bookKey)))
+                {
+                    Console.WriteLine($"Reader {reader.FullName} (Key: {reader.Key}) already has this book.");
+                }
+                else
+                {
+                    Console.WriteLine($"No available copies for the book {book.Title} (Key: {book.Key}).");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Book with key {bookKey} not found.");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Reader with key {readerKey} not found.");
+        }
+    }
